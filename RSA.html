@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)file:///E:/autojs_project/tuwei/rsa(1).html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+</head><body>&nbsp; &nbsp; 
+&nbsp; &nbsp; <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
+&nbsp; &nbsp; <meta http-equiv="Cache-Control" content="no-transform">
+&nbsp; &nbsp; <meta http-equiv="Cache-Control" content="no-siteapp">
+&nbsp; &nbsp; <meta name="applicable-device" content="pc,mobile">
+　  <script src="./RSA_files/jquery-3.1.1.min.js"></script>
+
+
+    <script language="JavaScript" type="text/javascript" src="./RSA_files/crypto-js.js"></script>
+ 
+    <script language="JavaScript" type="text/javascript" src="./RSA_files/jsbn.js"></script>
+ 
+	<script language="JavaScript" type="text/javascript" src="./RSA_files/jsbn2.js"></script>
+ 
+	<script language="JavaScript" type="text/javascript" src="./RSA_files/prng4.js"></script>
+ 
+	<script language="JavaScript" type="text/javascript" src="./RSA_files/rng.js"></script>
+ 
+    <script language="JavaScript" type="text/javascript" src="./RSA_files/rsa.js"></script>
+    <script language="JavaScript" type="text/javascript" src="./RSA_files/md5.js"></script>
+    <script language="JavaScript" type="text/javascript" src="./RSA_files/main.js"></script>
+
+ 
+    <title>RSA</title>
+    <h1>原生js对接----土味验证</h1>
+    <h3>一.软件初始化：（所有动作必须执行这个，也就是必须填写软件id和版本号，在实际操作中应该自动读取）</h3>
+    <div>请输入软件id: (测试时必填，测试时查看测试卡号的软件id) &nbsp&nbsp&nbsp <input type="text" placeholder="" id ="init_id" value = "3"></div>
+    <div>请输入软件版本号:(测试时必填,测试时查看测试卡号的软件版本)<input type="text" placeholder="" id ="init_var" value="1"></div>
+
+<h3>二.注册码注册:</h3>
+<div>请输入注册码：（你在土味验证后台生成的一条注册码）<input type="text" id= "reg_code"></div>
+<bottom  onclick="reg_b();" type="buttom" style="background-color:red">点击注册</bottom>
+
+<h3>三.推荐人加时:</h3>
+<div>请输入自己的注册码：<input type="text" id= "self_code"></div>
+<div>请输入推荐码：<input type="text" id= "rec_code"></div>
+<bottom  onclick="tw_recommend();" type="buttom" style="background-color:red">点击加时</bottom>
+
+<h3>四.解绑:</h3>
+<div>请输入自己的注册码：<input type="text" id= "ubind_code"></div>
+<bottom  onclick="tw_unbind();" type="buttom" style="background-color:red">点击解绑</bottom>
+
+<h3>五.试用:</h3>
+<div>请输入自己的注册码：<input type="text" id= "try_code"></div>
+<bottom  onclick="tw_try();" type="buttom" style="background-color:red">点击试用</bottom>
+
+<h3>六.心跳校验（时间间隔60秒,要携带token）:</h3>
+<div>请输入自己的注册码：<input type="text" id= "check_code"></div>
+<bottom  onclick="tw_check();" type="buttom" style="background-color:red">点击校验</bottom>
+
+<h3>七.下线(要携带token):</h3>
+<div>请输入自己的注册码：<input type="text" id= "off_code"></div>
+<bottom  onclick="tw_offline();" type="buttom" style="background-color:red">点击下线</bottom>
+
+
+
+<script>
+    //注册码注册js的相关操作
+ var    test_time;
+ var token;
+ var lasttime;
+function reg_b(){  
+            test_time= getTime();
+            var soft_id = $("#init_id").val()
+            var soft_var = $("#init_var").val()
+            var code = $("#reg_code").val()
+            var cid = get_user_agent();
+            var ip = getIp();
+        
+            // console.log(soft_id)
+            // console.log(soft_var)
+            // console.log(code)
+            // console.log(cid)
+            // console.log(ip)
+            // console.log(test_time)
+            param = {"o":"0","si":soft_id,"var":soft_var,"c":code,"ci":cid,"ip":getIp(),"t":getTime() };
+            //param =  {"o":"0","si":"3","var":"1","c":"9CD618C4D4670D0634AF8661051AA6C4","ci":"91a5403eeb518626","ip":"14.251.125.111","t":getTime()}
+           requests(param,false)  
+        }  
+
+
+//推荐人加时操作
+function tw_recommend(){
+    test_time= getTime();
+var self_code = $("#self_code").val();
+var rec_code = $("#rec_code").val();
+var soft_id = $("#init_id").val()
+var soft_var = $("#init_var").val()
+var cid = get_user_agent();
+param = {"o":"5","si":soft_id,"var":soft_var,"c":self_code,"ci":cid,"rm":rec_code,"t":getTime() };
+requests(param,false)
+}
+
+//解绑操作
+function tw_unbind(){
+    test_time= getTime();
+var soft_id = $("#init_id").val()
+var soft_var = $("#init_var").val()
+var code = $("#ubind_code").val();
+var cid = get_user_agent();
+param = {"o":"1","si":soft_id,"var":soft_var,"c":code,"ci":cid,"ip":getIp(),"t":getTime() };
+requests(param,false)
+
+}
+
+//试用
+function tw_try(){
+    test_time= getTime();
+var soft_id = $("#init_id").val()
+var soft_var = $("#init_var").val()
+var code = $("#try_code").val();
+var cid = get_user_agent();
+
+param = {"o":"3","si":soft_id,"var":soft_var,"c":code,"ci":cid,"ip":getIp(),"t":getTime() };
+requests(param,false)
+}
+
+//心跳校验
+function tw_check(code){
+    test_time= getTime();
+    now_time = getTime();
+    console.log(now_time);
+    console.log(lasttime);
+    if (now_time-Number(lasttime)<50000){
+        msg ="验证频率不能小于1分钟"
+        console.log(msg)
+        lasttime = getTime();
+        return false;
+    }else{
+    lasttime = getTime();
+var soft_id = $("#init_id").val()
+var soft_var = $("#init_var").val()
+var cid = get_user_agent();
+var code = $("#check_code").val();
+param = {"si":soft_id,"var":soft_var,"c":code,"ci":cid,"k":token,"t":getTime() };
+requests(param,true);
+    }
+}
+
+
+//下线,要携带token
+function tw_offline(){
+    test_time= getTime();
+var soft_id = $("#init_id").val()
+var soft_var = $("#init_var").val()
+var cid = get_user_agent();
+var code = $("#off_code").val();
+param = {"o":"4","si":soft_id,"var":soft_var,"k":token,"c":code,"ci":cid,"time":getTime()};
+requests(param,false);
+}
+</script>
+
+
+<script>
+
+    //封装获取浏览器标识
+    function get_user_agent(){
+        var cid = navigator.userAgent;
+            cid = hex_md5(cid);
+            cid = cid.substr(9,16);
+            return cid;
+    }
+
+    //加解密操作封装
+    var paramSecret;
+    function requests(param ,status){
+    if(status){
+        url = "https://tw.twgcs.xyz/Home/Auth/valid?data="
+    }else{
+        url = "https://tw.twgcs.xyz/Home/Auth/signin?data="
+    }
+    var param = JSON.stringify(param)
+    // console.log("请求参数：",param)
+    test_str = param;
+    var RSADo = {"modulus":"AEDA765C9BF7C09E6CC5639C94E4A5772A719337290BB0CF496EA5100877760F4D33D30AAB12BDCFE1471AD184C37F8AAB1E8FC3A128CEDE6B3D98CCFE21492D508AEEE8775DE42E407758E212BA238FD1CF5F78226F10F0BD6060FD70390CB572F8CE1A74D9AA31F4FB45372599862EF8F767BFFA6F59E0A54FD0E1977ECB89","publicExponent":"1160b5a3"}
+    var privateKey = "0DD93623B39CE424ADB2DC01AB305B154ED8AF868E2395083E36AE966D9F555000DCF995E3154AE6F1B97A4D368E4F9F0871ED66B3A554040DEBE19A98A309EA52096E58BF2507EFAD83C850294EE85B7BF68FC5455AB5BB302E9AD68B838FF9B6E9D78DBBB91EA9AF52B5D82D521E87587EB4C094B3D0AA09A6BCB795D0F587"; 
+    var rsa = new RSAKey()
+    rsa.setPublic(RSADo.modulus, RSADo.publicExponent)
+    if (test_str.length>100){
+        left = rever(test_str.substring(0,100));
+        var l_encryptStr = rsa.encrypt(left);
+        right = rever(test_str.substring(100));
+        var r_encryptStr = rsa.encrypt(right);
+
+        paramSecret = l_encryptStr+"z"+r_encryptStr
+  
+    }else{
+        var paramSecret = rsa.encrypt(test_str);
+  
+    }
+    console.log("密文：",paramSecret)
+    console.log("请求网址是：",url)
+    var des_k= "#h2@j7!a";
+    　  $.ajax({
+        type: "get",
+        dataType: 'json',  
+        // xhr.withCredentialstrue=true
+        crossDomain: true,
+        xhrFields:{
+    withCredentials:true
+},
+        url: url+paramSecret,//
+        success: function(data){
+            if(!data){
+                console.log("下线成功，就不需要返回了")    
+            }
+            console.log("接受到反馈了成功，密文是："+data)   
+            console.log(data)  
+                },
+        error:function(data){
+            console.log(data)  
+            var result = data.responseText
+            console.log("接受到反馈了，密文是："+result)
+            var decrypt = CryptoJS.DES.decrypt(result, CryptoJS.enc.Utf8.parse(des_k), {mode: CryptoJS.mode.ECB,padding: CryptoJS.pad.Pkcs7}).toString(CryptoJS.enc.Utf8);
+            console.log("接受到反馈了，密文des解密是："+decrypt);
+            console.log("最后转码"+decodeUnicode(decrypt));
+            decrypt =  $.parseJSON( decrypt )
+
+            var lastresponsetime = getTime();
+            console.log(decrypt['t'])
+            console.log(test_time)
+            //判断时间
+            if(decrypt['t']!=''){
+            
+                if(Number(decrypt['t'])!=test_time){
+                    console.log("时间验证失败")
+                    msg = "时间验证失败"
+                    lastresponsetime = -1
+                    return 
+                }
+            }else{
+                console.log("没有时间，时间验证失败")
+                msg = "没有时间，时间验证失败"
+                    lastresponsetime = -1
+                    return 
+            }
+            //判断msg
+            if(decrypt['msg']!=''){
+                console.log("收到了消息")
+                msg =decrypt['msg']
+            }
+
+            //判断token
+            if(decrypt['token']){
+                console.log("收到了token")
+                token =decrypt['token']
+            }
+
+            //判断url
+            if(decrypt['url']!=''){
+                console.log("收到了url")
+                url =decrypt['url']
+            }
+
+            //判断error
+            if(decrypt['error']!='0'){
+                console.log("error")
+                error =decrypt['error']
+                if(Number(error)==-2){
+                    console.log("打开网页更新")
+                }else{
+                    lastresponsetime = Number(error)
+                }
+                return ;
+
+
+            }
+
+            console.log(decrypt)
+            }                   
+        })
+    }
+</script>
+
+
+    <script type="text/javascript">
+
+  
+
+
+  window.onload=function(){
+    //sends();
+  } 
+
+    function sends() {
+        var des_k= "#h2@j7!a";
+　　　　//采用POST方式调用服务
+　　　//　$.post('https://www.twgcs.xyz/Home/Auth/valid?data='+paramSecret, function (text, status) { alert(text); });
+　  $.ajax({
+        type: "get",
+
+        //url: "https://www.twgcs.xyz/Home/Auth/valid?data="+paramSecret,//
+        url: "https://tw.twgcs.xyz/Home/Auth/signin?data="+paramSecret,//
+        success: function(data){
+            console.log(data)   
+                },
+        error:function(data){
+            var result = data.responseText
+            console.log("接受到反馈了，密文是："+result)
+            var decrypt = CryptoJS.DES.decrypt(result, CryptoJS.enc.Utf8.parse(des_k), {mode: CryptoJS.mode.ECB,padding: CryptoJS.pad.Pkcs7}).toString(CryptoJS.enc.Utf8);
+            console.log("接受到反馈了，密文des解密是："+decrypt);
+            console.log("最后转码"+decodeUnicode(decrypt));
+            decrypt =  $.parseJSON( decrypt )
+
+            var lastresponsetime = getTime();
+            console.log(decrypt['t'])
+
+            //判断时间
+            if(decrypt['t']!=''){
+                if(decrypt['t']!=test_time){
+                    console.log("时间验证失败")
+                    msg = "时间验证失败"
+                    lastresponsetime = -1
+                    return 
+                }
+            }else{
+                console.log("没有时间，时间验证失败")
+                msg = "没有时间，时间验证失败"
+                    lastresponsetime = -1
+                    return 
+            }
+            //判断msg
+            if(decrypt['msg']!=''){
+                console.log("收到了消息")
+                msg =decrypt['msg']
+            }
+
+            //判断token
+            if(decrypt['token']!=''){
+                console.log("收到了token")
+                token =decrypt['msg']
+            }
+
+            //判断url
+            if(decrypt['url']!=''){
+                console.log("收到了url")
+                url =decrypt['url']
+            }
+
+            //判断error
+            if(decrypt['error']!='0'){
+                console.log("error")
+                error =decrypt['error']
+                if(Number(error)==-2){
+                    console.log("打开网页更新")
+                }else{
+                    lastresponsetime = Number(error)
+                }
+                return ;
+
+
+            }
+
+            console.log(decrypt)
+            }                   
+        })
+            }
+        
+
+    function rever(str){
+        var a=str.split(""); //先拆分成数组
+        var b=str.split("").reverse(); //再反转，但还是数组
+        var c=str.split("").reverse().join("");
+        return c
+        }
+    function decodeUnicode(str) {  
+        str = str.replace(/\\/g, "%");  
+        return unescape(str);  
+        }  
+
+
+     
+//获取时间戳
+function getTime(){
+    return  Date.parse(new Date());
+}   
+	</script>
+
+
+</body></html>
